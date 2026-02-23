@@ -1,0 +1,29 @@
+        .text
+        .globl main
+
+main:
+       
+        lui     s2, 0x12345  # set s2 = 0x12345678
+        addi    s2, s2, 0x678
+
+        # bytes from s2
+        andi    t0, s2, 0xFF      # t0 = 0x78 (byte 0)
+        srli    t1, s2, 8
+        andi    t1, t1, 0xFF      # t1 = 0x56 (byte 1)
+        srli    t2, s2, 16
+        andi    t2, t2, 0xFF      # t2 = 0x34 (byte 2)
+        srli    t3, s2, 24        # t3 = 0x12 (byte 3)
+
+ #reversed positions
+        slli    t0, t0, 24         
+        slli    t1, t1, 16        
+        slli    t2, t2, 8         
+        
+
+        or      s4, t0, t1 #put in s4
+        or      s4, s4, t2
+        or      s4, s4, t3
+
+exit:
+        addi    a7, x0, 10
+        ecall
