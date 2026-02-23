@@ -49,5 +49,59 @@ exit:   addi    a7, x0, 10
 
 #### Do not change lines above
 binary_search:
+        addi    sp, sp, -8
+        sw      ra, 4(sp)
+        sw      s1, 0(sp)
 
-        # TODO
+        # if (n == 0)
+        beq     a1, x0, n_zero
+
+        # half = n / 2
+        srai    t0, a1, 1
+
+        # half_v = a[half]
+        slli    t1, t0, 2
+        add     t1, a0, t1
+        lw      t2, 0(t1)
+
+        # if (half_v == v)
+        beq     t2, a2, found
+
+        # else if (v < half_v)
+        blt     a2, t2, search_left
+
+        # else (v > half_v)
+        addi    s1, t0, 1              # left = half + 1
+
+        slli    t3, s1, 2              # byte offset = left * 4
+        add     t4, a0, t3             # new base = &a[left]
+        sub     t5, a1, s1             # new size = n - left
+
+        addi    a0, t4, 0              # set new base
+        addi    a1, t5, 0              # set new size
+        # a2 already holds v
+        jal     ra, binary_search
+
+        blt     a0, x0, f_exit         # if (rv < 0) return rv
+        add     a0, a0, s1             # rv += left
+        beq     x0, x0, f_exit
+
+search_left:
+        addi    a1, t0, 0              # new size = half
+        # a0 unchanged
+        # a2 unchanged
+        jal     ra, binary_search
+        beq     x0, x0, f_exit
+
+found:
+        addi    a0, t0, 0
+        beq     x0, x0, f_exit
+
+n_zero:
+        addi    a0, x0, -1
+
+f_exit:
+        lw      ra, 4(sp)
+        lw      s1, 0(sp)
+        addi    sp, sp, 8
+        jalr    x0, ra, 0
