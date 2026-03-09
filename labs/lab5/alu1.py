@@ -15,6 +15,7 @@ def Not(c, a):
         # generate the output with a logical expression
         c.next = not a
 
+
     return comb_logic
 
 @block
@@ -51,6 +52,7 @@ def Or2(c, a, b):
     def comb_logic():
         # TODO
         # generate the output with a logical expression
+        c.next = a or b
 
     return comb_logic
 
@@ -77,6 +79,7 @@ def Mux2(c, a, b, s):
         # TODO
         # generate the output with a logical expression
         # do not use if-else
+        c.next = ((not s) and a ) or (s and b)
 
 
     return mux_logic
@@ -152,12 +155,13 @@ def Mux4(z, a, b, c, d, s):
     @always_comb
     def mux_logic():
         # TODO
-
+        s1, s0 = s[1], s[0]
         # Generate z from a, b, c, d and s
+        z.next = ((not s1) and (not s0) and a) or ((not s1) and s0 and b) or (s1 and (not s0) and c) or (s1 and s0 and d)
 
         # copy values to s1 and s0, which are easier to type
         # in your expression
-        s1, s0 = s[1], s[0]
+        
 
 
     return mux_logic
@@ -194,6 +198,8 @@ def Adder1bit(a, b, carryin, carryout, s):
         # For example, 
         # s.next = 
         # carryout.out = 
+        s.next = a ^ b ^ carryin
+        carryout.next = (a and b) or (a and carryin) or (b and carryin)
 
     return comb_adder
 
@@ -239,9 +245,15 @@ def ALU1bit(a, b, carryin, binvert, operation, result, carryout):
     notb = Signal(bool(0))
     signal0 = Signal(bool(0))   # always 0
 
+    mux2_out = Signal(bool(0))  
+    and2_out = Signal(bool(0)) 
+    or2_out = Signal(bool(0)) 
+    adder_sum_out = Signal(bool(0)) 
+    carryout2_out = Signal(bool(0)) 
+
     # TODO
     # Create signals
-
+  
     # For example, we create the signal `notb`, which is the output of the NOT gate
     notb = Signal(bool(0))
 
@@ -252,13 +264,19 @@ def ALU1bit(a, b, carryin, binvert, operation, result, carryout):
     # here is an example to place the NOT gate
     u_not = Not(notb, b) 
 
+
     # the name u_not is not critical. 
     # you can name them u_not, u_mux2, and so on, 
     # or just u1, u2, u3, ...
 
     # continue to instantiate other gates/modules
     # like 2-1 MUX and AND
-
+    u_and = And2(and2_out, a, mux2_out)
+    u_or = Or2(or2_out,a, mux2_out)
+    
+    u_adder = Adder1bit(a, mux2_out, carryin, carryout, adder_sum_out)
+    u_mux = Mux2(mux2_out, b, notb, binvert)
+    u_operation = Mux4(result, and2_out, or2_out, adder_sum_out, signal0, operation)
 
     ##########################################
     # No need to change the lines below
